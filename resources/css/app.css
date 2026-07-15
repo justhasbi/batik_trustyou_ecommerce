@@ -1,12 +1,237 @@
-@import 'tailwindcss';
+:root {
+    --paper: #fafaf8;
+    --paper-2: #ffffff;
+    --ink: #17171c;
+    --muted: #6e6e76;
+    --line: #e6e5df;
+    --line-2: #d8d7cf;
+    --indigo: #2e2a5e;
+    --indigo-hover: #3a356f;
+    --indigo-tint: #ecebf4;
+    --danger: #a5352d;
+    --font-sans: 'Inter', system-ui, sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+    --radius: 4px;
+}
 
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
-@source "../**/*.blade.php";
-@source "../**/*.js";
-@source "../**/*.vue";
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
 
-@theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+html,
+body {
+    padding: 0;
+    margin: 0;
+}
+
+body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+a {
+    color: inherit;
+}
+
+img {
+    max-width: 100%;
+    display: block;
+}
+
+button {
+    font-family: inherit;
+}
+
+:focus-visible {
+    outline: 2px solid var(--indigo);
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+.container {
+    width: 100%;
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+.hairline {
+    border: none;
+    border-top: 1px solid var(--line);
+    margin: 0;
+}
+
+.eyebrow {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.mono {
+    font-family: var(--font-mono);
+}
+
+.muted {
+    color: var(--muted);
+}
+
+.price {
+    font-family: var(--font-mono);
+    font-weight: 500;
+    color: var(--ink);
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 11px 20px;
+    background: var(--indigo);
+    color: #fff;
+    border: 1px solid var(--indigo);
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+}
+
+.btn:hover {
+    background: var(--indigo-hover);
+    border-color: var(--indigo-hover);
+}
+
+.btn:active {
+    transform: translateY(1px);
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn--ghost {
+    background: transparent;
+    color: var(--ink);
+    border-color: var(--line-2);
+}
+
+.btn--ghost:hover {
+    background: var(--indigo-tint);
+    border-color: var(--indigo);
+    color: var(--indigo);
+}
+
+.btn--block {
+    display: flex;
+    width: 100%;
+}
+
+.btn--sm {
+    padding: 7px 14px;
+    font-size: 13px;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 16px;
+}
+
+.field label {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+}
+
+.input {
+    width: 100%;
+    padding: 10px 12px;
+    background: var(--paper-2);
+    color: var(--ink);
+    border: 1px solid var(--line-2);
+    border-radius: var(--radius);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    transition: border-color 0.15s ease;
+}
+
+.input:focus {
+    border-color: var(--indigo);
+}
+
+.input::placeholder {
+    color: var(--muted);
+}
+
+textarea.input {
+    resize: vertical;
+    min-height: 88px;
+}
+
+.form-error {
+    color: var(--danger);
+    font-size: 13px;
+}
+
+.tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border: 1px solid var(--line-2);
+    border-radius: 999px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.03em;
+    color: var(--muted);
+}
+
+.card {
+    background: var(--paper-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+}
+
+.spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--line-2);
+    border-top-color: var(--indigo);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.empty {
+    padding: 64px 24px;
+    text-align: center;
+    color: var(--muted);
 }

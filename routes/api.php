@@ -25,6 +25,7 @@ Route::delete('/cart/items/{item}', [CartController::class, 'remove']);
 Route::post('/chat/start', [ChatController::class, 'start']);
 Route::post('/chat/message', [ChatController::class, 'message']);
 Route::post('/chat/admin', [ChatController::class, 'switchToAdmin']);
+Route::get('/chat/{session}/messages', [ChatController::class, 'messages']);
 
 // ---------- Perlu login (Sanctum) ----------
 Route::middleware('auth:sanctum')->group(function () {

@@ -15,8 +15,8 @@ class CartController extends Controller
     // Tamu memakai header X-Cart-Token; user login memakai user_id.
     protected function resolveCart(Request $request): Cart
     {
-        if ($request->user()) {
-            return Cart::firstOrCreate(['user_id' => $request->user()->id]);
+        if ($user = auth('sanctum')->user()) {
+            return Cart::firstOrCreate(['user_id' => $user->id]);
         }
 
         $token = $request->header('X-Cart-Token');

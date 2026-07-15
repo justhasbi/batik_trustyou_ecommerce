@@ -1,6 +1,6 @@
 # Instalasi Aplikasi — Batik TrustYou
 
-Dokumentasi instalasi backend (Laravel + Filament) dan Service chatbot (Python). Frontend Vue tidak termasuk dalam dokumen ini.
+Dokumentasi instalasi backend (Laravel + Filament), storefront (Vue 3, disajikan oleh Laravel via Vite), dan service chatbot (Python).
 
 ## Kebutuhan sistem
 
@@ -8,6 +8,7 @@ Dokumentasi instalasi backend (Laravel + Filament) dan Service chatbot (Python).
 |----------|---------------|
 | PHP | 8.2 |
 | Composer | 2.x |
+| Node.js | 18.x |
 | MySQL / MariaDB | 8.0 / 10.4 |
 | Python | 3.10 |
 
@@ -86,20 +87,45 @@ php artisan tinker
 >>> exit
 ```
 
-## 2. Menjalankan backend
+## 2. Frontend (Vue 3 storefront)
+
+Storefront disajikan oleh Laravel sendiri (satu origin dengan API dan `/admin`) lewat Vite bawaan Laravel. Tidak perlu project terpisah.
+
+### 2.1 Dependency
 
 ```bash
-php artisan serve
+npm install
+```
+
+Tidak ada konfigurasi tambahan — storefront otomatis memakai API pada origin yang sama (`/api`) dan token Sanctum untuk autentikasi.
+
+## 3. Menjalankan (dev)
+
+Jalankan dua proses secara bersamaan di dua terminal:
+
+```bash
+php artisan serve      # menyajikan storefront + API + /admin
+```
+
+```bash
+npm run dev             # Vite dev server + hot reload untuk aset frontend
 ```
 
 | Service | URL |
 |---------|-----|
+| Storefront | http://localhost:8000 |
 | API | http://localhost:8000/api |
 | Dashboard admin | http://localhost:8000/admin |
 
-## 3. Service chatbot (Python)
+Untuk build produksi (tanpa `npm run dev`):
 
-### 3.1 Virtual environment dan dependency
+```bash
+npm run build
+```
+
+## 4. Service chatbot (Python)
+
+### 4.1 Virtual environment dan dependency
 
 ```bash
 cd chatbot_service
@@ -121,13 +147,13 @@ Pasang dependency:
 pip install -r requirements.txt
 ```
 
-### 3.2 Data NLTK
+### 4.2 Data NLTK
 
 ```bash
 python -c "import nltk; nltk.download('punkt'); nltk.download('punkt_tab')"
 ```
 
-### 3.3 Latih model
+### 4.3 Latih model
 
 ```bash
 python train.py
@@ -135,7 +161,7 @@ python train.py
 
 Perintah ini menghasilkan `model.pkl` dan grafik evaluasi di folder `reports/`.
 
-### 3.4 Jalankan service
+### 4.4 Jalankan service
 
 ```bash
 uvicorn main:app --port 8001
@@ -147,7 +173,7 @@ Verifikasi:
 curl http://localhost:8001/health
 ```
 
-## 4. Konfigurasi penghubung backend–chatbot
+## 5. Konfigurasi penghubung backend–chatbot
 
 Pastikan `config/services.php` memuat entri berikut:
 
