@@ -18,7 +18,8 @@ RUN npm run build
 
 
 # ---- Stage 2: runtime PHP --------------------------------------------------
-FROM php:8.3-cli-bookworm AS app
+# PHP 8.4: composer.lock memakai komponen Symfony 8 yang butuh PHP >= 8.4.1.
+FROM php:8.4-cli-bookworm AS app
 WORKDIR /var/www/html
 
 # Ekstensi PHP yang dibutuhkan Laravel 12 + Filament + driver DB.
