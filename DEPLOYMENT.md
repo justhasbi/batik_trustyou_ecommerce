@@ -108,7 +108,7 @@ cp .env.docker.example .env.docker
 docker compose build
 
 # 3. Generate APP_KEY, lalu salin hasilnya ke APP_KEY di .env.docker
-docker compose run --rm app php artisan key:generate --show
+docker compose run --rm --entrypoint php app artisan key:generate --show
 
 # 4. Jalankan (RUN_SEED=true di .env.docker akan mengisi data contoh sekali)
 docker compose up -d
@@ -338,7 +338,7 @@ Simpan (`Ctrl+O`, `Enter`, `Ctrl+X`), lalu:
 docker compose build
 
 # c. Generate APP_KEY -> salin hasilnya ke APP_KEY di .env.docker
-docker compose run --rm app php artisan key:generate --show
+docker compose run --rm --entrypoint php app artisan key:generate --show
 nano .env.docker      # tempel: APP_KEY=base64:....
 
 # d. Nyalakan semua service
@@ -440,7 +440,7 @@ docker compose down
 docker compose build && docker compose up -d
 
 # Generate APP_KEY
-docker compose run --rm app php artisan key:generate --show
+docker compose run --rm --entrypoint php app artisan key:generate --show
 
 # Migrasi manual (kalau perlu)
 docker compose exec app php artisan migrate --force

@@ -13,7 +13,7 @@
 #  Langkah pertama kali:
 #    1. cp .env.docker.example .env.docker
 #    2. docker compose build
-#    3. docker compose run --rm app php artisan key:generate --show
+#    3. docker compose run --rm --entrypoint php app artisan key:generate --show
 #       -> salin hasilnya ke APP_KEY di .env.docker
 #    4. docker compose up -d           (set RUN_SEED=true sekali untuk isi data contoh)
 # ============================================================================

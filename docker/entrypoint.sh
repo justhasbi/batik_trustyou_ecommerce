@@ -7,6 +7,13 @@ set -e
 
 cd /var/www/html
 
+# Jika ada perintah yang dilewatkan (mis. `docker compose run app php artisan ...`),
+# jalankan langsung tanpa proses prep server. Tanpa argumen (mis. `docker compose up`),
+# lanjut ke penyiapan + menjalankan web server di bawah.
+if [ "$#" -gt 0 ]; then
+    exec "$@"
+fi
+
 # Generate APP_KEY bila belum di-set lewat environment (mis. lokal/pertama kali).
 if [ -z "$APP_KEY" ]; then
     echo "[entrypoint] APP_KEY kosong -> generate sementara"
