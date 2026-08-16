@@ -10,14 +10,6 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-
-        User::create([
-            'name' => 'Super Admin',
-            'email' => 'admin@example.com',
-            'password' => bcrypt('password123'),
-            'is_admin' => true,
-        ]);
-
         // Admin (bisa akses dashboard Filament)
         User::updateOrCreate(
             ['email' => 'admin@batiktrustyou.test'],
