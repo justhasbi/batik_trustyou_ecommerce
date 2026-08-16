@@ -48,6 +48,15 @@ class OrderResource extends Resource
                         ->required(),
                 ])->columns(3),
 
+            Forms\Components\Section::make('Pembayaran')
+                ->schema([
+                    Forms\Components\TextInput::make('payment_method')->label('Metode')->disabled(),
+                    Forms\Components\TextInput::make('payment_channel')->label('Channel')->disabled(),
+                    Forms\Components\TextInput::make('transaction_code')->label('Kode transaksi')->disabled(),
+                    Forms\Components\TextInput::make('va_number')->label('Virtual Account')->disabled(),
+                    Forms\Components\DateTimePicker::make('paid_at')->label('Dibayar pada')->disabled(),
+                ])->columns(3),
+
             Forms\Components\Section::make('Pengiriman')
                 ->description('Bagian yang diatur admin — status ini yang bisa ditanyakan pelanggan lewat chatbot.')
                 ->schema([
@@ -56,6 +65,7 @@ class OrderResource extends Resource
                         ->options(self::SHIPPING_STATUSES)
                         ->required(),
                     Forms\Components\TextInput::make('courier')->label('Kurir')->placeholder('JNE, J&T, SiCepat...'),
+                    Forms\Components\TextInput::make('shipping_method')->label('Layanan')->disabled(),
                     Forms\Components\TextInput::make('tracking_number')->label('No. resi'),
                 ])->columns(3),
 

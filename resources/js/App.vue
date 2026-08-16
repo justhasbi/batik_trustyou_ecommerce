@@ -33,6 +33,7 @@ async function handleLogout() {
                         Keranjang
                         <span v-if="cart.count > 0" class="cart-badge mono">{{ cart.count }}</span>
                     </RouterLink>
+                    <RouterLink v-if="auth.isLoggedIn" to="/orders" class="site-nav__link">Pesanan</RouterLink>
                     <button v-if="auth.isLoggedIn" class="site-nav__link site-nav__button" type="button" @click="handleLogout">
                         Keluar
                     </button>

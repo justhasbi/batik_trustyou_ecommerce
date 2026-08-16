@@ -1,0 +1,68 @@
+# ============================================================================
+#  Batik TrustYou — orkestrasi seluruh stack dalam satu perintah.
+#
+#  Menjalankan 3 service:
+#    - app     : Laravel (API + Vue SPA) di http://localhost:8000
+#    - chatbot : FastAPI + NLTK (internal, dipanggil app)
+#    - db      : MySQL (data persisten di volume)
+#
+#  Catatan: service `chatbot` dibangun dari folder tetangga
+#  (../nltk_chatbot_service), jadi jalankan `docker compose` dari dalam folder
+#  batik_trustyou_ecommerce dengan kedua repo berdampingan.
+#
+#  Langkah pertama kali:
+#    1. cp .env.docker.example .env.docker
+#    2. docker compose build
+#    3. docker compose run --rm app php artisan key:generate --show
+#       -> salin hasilnya ke APP_KEY di .env.docker
+#    4. docker compose up -d           (set RUN_SEED=true sekali untuk isi data contoh)
+# ============================================================================
+
+services:
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-batik}
+      MYSQL_USER: ${DB_USERNAME:-batik}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-secret}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootsecret}
+    command: --default-authentication-plugin=mysql_native_password
+    volumes:
+      - mysqldata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p${DB_ROOT_PASSWORD:-rootsecret} --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+
+  chatbot:
+    build: ../nltk_chatbot_service
+    restart: unless-stopped
+    # Hanya diakses internal oleh service app; tidak dipublish ke host.
+    expose:
+      - "8001"
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      chatbot:
+        condition: service_started
+    env_file:
+      - .env.docker
+    environment:
+      # Override supaya app menemukan service lain di jaringan compose.
+      DB_HOST: db
+      CHATBOT_URL: http://chatbot:8001
+    ports:
+      - "8000:8000"
+    volumes:
+      # Persist gambar produk yang di-upload lewat panel admin (Filament).
+      - storage_public:/var/www/html/storage/app/public
+
+volumes:
+  mysqldata:
+  storage_public:

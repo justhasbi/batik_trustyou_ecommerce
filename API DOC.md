@@ -329,17 +329,40 @@ Response: objek keranjang terbaru.
 
 ## 4. Checkout & Pesanan
 
+Alur pesanan lengkap: dari checkout, payment, sampai tracking pengiriman. Perlu dicatat, seluruh proses payment dan shipping di sini masih dummy untuk keperluan demo — belum terhubung ke payment gateway atau courier sungguhan.
+
+### GET `/checkout/options`
+
+Terproteksi. Mengembalikan pilihan payment method dan shipping option yang dipakai di halaman checkout.
+
+Response `200`:
+
+```json
+{
+  "payment_methods": [
+    { "id": "qris", "name": "QRIS", "type": "qr", "desc": "...", "channels": [] },
+    { "id": "ewallet", "name": "E-Wallet", "type": "qr", "channels": ["GoPay", "OVO", "DANA", "ShopeePay"] },
+    { "id": "bank_transfer", "name": "Transfer Bank (Virtual Account)", "type": "va", "channels": ["BCA", "BNI", "BRI", "Mandiri"] },
+    { "id": "cod", "name": "Bayar di Tempat (COD)", "type": "cod", "channels": [] }
+  ],
+  "shipping_options": [
+    { "id": "jne_reg", "courier": "JNE", "service": "Reguler", "cost": 15000, "etd": "2-3 hari" }
+  ]
+}
+```
+
 ### POST `/checkout`
 
-**Terproteksi (wajib login).** Membuat pesanan dari keranjang user, mengurangi stok, lalu mengosongkan keranjang.
+Terproteksi (wajib login). Mengubah isi keranjang menjadi order: stok dikurangi, keranjang dikosongkan, lalu payment instruction dibuat sesuai metode yang dipilih. Ongkos kirim mengikuti `shipping_option_id` dan dihitung di server, jadi nilainya tidak bisa diubah dari sisi client.
 
-| Field | Tipe | Wajib |
-|-------|------|-------|
-| `recipient_name` | string | ya |
-| `recipient_phone` | string | ya |
-| `shipping_address` | string | ya |
-| `courier` | string | tidak |
-| `shipping_cost` | number | tidak |
+| Field | Tipe | Wajib | Keterangan |
+|-------|------|-------|------------|
+| `recipient_name` | string | ya | |
+| `recipient_phone` | string | ya | |
+| `shipping_address` | string | ya | |
+| `shipping_option_id` | string | ya | salah satu `id` dari `/checkout/options` |
+| `payment_method` | string | ya | `qris` \| `ewallet` \| `bank_transfer` \| `cod` |
+| `payment_channel` | string | kondisional | wajib bila metode punya `channels` (mis. `BCA`, `GoPay`) |
 
 Request:
 
@@ -352,14 +375,14 @@ curl -X POST http://localhost:8000/api/checkout \
     "recipient_name": "Budi Santoso",
     "recipient_phone": "081211112222",
     "shipping_address": "Jl. Melati No. 10, Bandung",
-    "courier": "JNE",
-    "shipping_cost": 20000
+    "shipping_option_id": "jne_reg",
+    "payment_method": "qris"
   }'
 ```
 
 Keranjang kosong → `422` `{ "message": "Keranjang kosong." }`.
 
-Response `200`:
+Response `200` (contoh QRIS):
 
 ```json
 {
@@ -367,22 +390,32 @@ Response `200`:
     "id": 12,
     "order_number": "INV-AB12CD34",
     "status": "pending",
+    "status_label": "Menunggu pembayaran",
     "shipping_status": "not_shipped",
+    "shipping_label": "Belum dikirim",
     "subtotal": 320000,
-    "shipping_cost": 20000,
-    "total": 340000,
-    "recipient_name": "Budi Santoso",
-    "recipient_phone": "081211112222",
-    "shipping_address": "Jl. Melati No. 10, Bandung",
+    "shipping_cost": 15000,
+    "total": 335000,
     "courier": "JNE",
+    "shipping_method": "Reguler",
     "tracking_number": null,
-    "created_at": "2026-07-04 10:00:00",
+    "payment_method": "qris",
+    "payment_channel": null,
+    "transaction_code": "TRX-260816-AB12CD",
+    "va_number": null,
+    "qr_payload": "BATIKTRUSTYOU|INV-AB12CD34|TRX-260816-AB12CD|335000|qris",
+    "payment_expires_at": "2026-08-17 09:00:00",
+    "paid_at": null,
+    "is_paid": false,
+    "shipping_timeline": [ { "key": "not_shipped", "label": "Belum dikirim", "done": true } ],
     "items": [
       { "product_name": "Kemeja Batik Pria Mega Mendung", "size": "M", "price": 320000, "quantity": 1, "subtotal": 320000 }
     ]
   }
 }
 ```
+
+Beberapa catatan soal payment method: untuk `bank_transfer` yang dikembalikan adalah `va_number`, bukan `qr_payload`. Sementara `cod` tidak melewati online payment sama sekali — order-nya langsung berstatus `processing`.
 
 ### GET `/orders`
 
@@ -411,6 +444,34 @@ curl http://localhost:8000/api/orders/12 \
 ```
 
 Bukan milik user → `404`.
+
+### POST `/orders/{id}/pay`
+
+Terproteksi. Menandai order sebagai sudah dibayar. Karena payment-nya masih dummy, endpoint inilah yang menggantikan peran callback dari payment gateway: `status` berubah menjadi `paid`, `paid_at` terisi, dan `shipping_status` naik ke `packed`.
+
+```bash
+curl -X POST http://localhost:8000/api/orders/12/pay \
+  -H "Accept: application/json" \
+  -H "Authorization: Bearer 12|aBcD3fGh..."
+```
+
+Endpoint menolak dengan `422` bila order sudah dibayar, memakai COD, sudah lewat batas waktu, atau sudah dibatalkan. Kalau berhasil, response-nya mengembalikan data order versi terbaru.
+
+### POST `/orders/{id}/shipping/advance`
+
+Terproteksi. Memajukan shipping status satu langkah, mengikuti urutan `not_shipped` → `packed` → `shipped` → `in_transit` → `delivered`. Endpoint ini dipakai untuk meniru perjalanan paket tanpa courier sungguhan. Tracking number dibuat otomatis begitu status masuk `shipped`, dan saat mencapai `delivered` status order ikut berubah menjadi `completed` — pertanda transaksi sudah selesai.
+
+```bash
+curl -X POST http://localhost:8000/api/orders/12/shipping/advance \
+  -H "Accept: application/json" \
+  -H "Authorization: Bearer 12|aBcD3fGh..."
+```
+
+Kalau order belum dibayar atau sudah terlanjur `delivered`, request ditolak dengan `422`.
+
+### POST `/orders/{id}/cancel`
+
+Terproteksi. Membatalkan order yang belum dibayar sekaligus mengembalikan stoknya. Setelah order dibayar atau sudah masuk proses shipping, pembatalan tidak lagi diizinkan (`422`).
 
 ---
 
@@ -520,9 +581,13 @@ Response `200`: `{ "mode": "admin", "reply": "Baik, Anda saya alihkan ke admin�
 | POST | `/cart/items` | tamu/Bearer |
 | PATCH | `/cart/items/{item}` | tamu/Bearer |
 | DELETE | `/cart/items/{item}` | tamu/Bearer |
+| GET | `/checkout/options` | Bearer |
 | POST | `/checkout` | Bearer |
 | GET | `/orders` | Bearer |
 | GET | `/orders/{id}` | Bearer |
+| POST | `/orders/{id}/pay` | Bearer |
+| POST | `/orders/{id}/shipping/advance` | Bearer |
+| POST | `/orders/{id}/cancel` | Bearer |
 | POST | `/chat/start` | tamu/Bearer |
 | POST | `/chat/message` | tamu/Bearer |
 | POST | `/chat/admin` | tamu/Bearer |

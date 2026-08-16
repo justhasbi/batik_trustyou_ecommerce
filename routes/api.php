@@ -32,8 +32,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
 
+    Route::get('/checkout/options', [CheckoutController::class, 'options']);
     Route::post('/checkout', [CheckoutController::class, 'store']); // WAJIB login
 
     Route::get('/orders', [OrderController::class, 'index']);
     Route::get('/orders/{id}', [OrderController::class, 'show']);
+    Route::post('/orders/{id}/pay', [OrderController::class, 'pay']);                 // bayar (dummy)
+    Route::post('/orders/{id}/shipping/advance', [OrderController::class, 'advanceShipping']); // simulasi kirim
+    Route::post('/orders/{id}/cancel', [OrderController::class, 'cancel']);
 });

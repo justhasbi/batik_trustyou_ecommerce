@@ -13,6 +13,24 @@ const routes = [
         component: () => import('@/views/CheckoutView.vue'),
         meta: { requiresAuth: true },
     },
+    {
+        path: '/orders',
+        name: 'orders',
+        component: () => import('@/views/OrdersView.vue'),
+        meta: { requiresAuth: true },
+    },
+    {
+        path: '/orders/:id/payment',
+        name: 'payment',
+        component: () => import('@/views/PaymentView.vue'),
+        meta: { requiresAuth: true },
+    },
+    {
+        path: '/orders/:id',
+        name: 'order-detail',
+        component: () => import('@/views/OrderDetailView.vue'),
+        meta: { requiresAuth: true },
+    },
 ]
 
 const router = createRouter({

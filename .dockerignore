@@ -1,0 +1,25 @@
+# Dependency & artefak yang tidak perlu masuk image (dibuat ulang saat build)
+.git
+.gitignore
+node_modules
+vendor
+public/build
+
+# Env & rahasia
+.env
+.env.*
+!.env.example
+
+# Storage runtime (jangan bawa data lokal ke image)
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+database/*.sqlite
+
+# Lain-lain
+tests
+.editorconfig
+README.md
+API DOC.md
+DEPLOYMENT.md
